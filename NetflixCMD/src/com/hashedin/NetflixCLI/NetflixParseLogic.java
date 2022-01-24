@@ -3,9 +3,10 @@ package com.hashedin.NetflixCLI;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class NetflixParseLogic {
@@ -38,34 +39,205 @@ public class NetflixParseLogic {
 
     }
 
-    public List<ArrayList<String>> listTVShows(int userInput) {
-        List<ArrayList<String>> tvShows= new ArrayList<>();
-        System.out.println("All the types of Shows with type as TV Show");
-        tvShows = allShows.stream()
-                .filter(show -> show.get(1).toUpperCase().contains(Constants.TV_SHOW_STRING))
-                .limit(userInput).collect(Collectors.toList());
+    public void showListDriver() {
 
-        return tvShows;
+        Scanner sc = new Scanner(System.in);
+        List<ArrayList<String>> finalResultList = new ArrayList<>();
+        System.out.println("Enter the Length");
+        int userInput = sc.nextInt();
+        System.out.println("Enter the choice: \n" +
+                "1) Show Records where Type = TV Show \n" +
+                "2) Show Records where Genre = Horror Movies \n" +
+                "3) Show Records where Type = Movie and Country = India \n" );
+
+        int choice = sc.nextInt();
+        switch (choice) {
+            case 1:
+                finalResultList = listShowsBasedOnQuery(
+                        userInput,
+                        Constants.SHOW_TYPE_COLUMN,
+                        Constants.TV_SHOW_STRING
+                );
+                break;
+            case 2:
+                finalResultList = listShowsBasedOnQuery(
+                        userInput,
+                        Constants.LISTED_IN_HORROR_COLUMN,
+                        Constants.HORROR_MOVIE_STRING
+                );
+                break;
+            case 3:
+                finalResultList = listShowsBasedOnQuery(
+                        userInput,
+                        Constants.COUNTRY_INDIA_COLUMN,
+                        Constants.SHOW_TYPE_COLUMN,
+                        Constants.COUNTRY_INDIA,
+                        Constants.TYPE_MOVIE_STRING
+                );
+                break;
+        }
+        System.out.println(finalResultList);
+        sc.close();
     }
 
 
-    public List<ArrayList<String>> genreHorror(int userInput) {
-        List<ArrayList<String>> horrorShows= new ArrayList<>();
-        System.out.println("All the types of Shows with Genre as Horror");
-        horrorShows = allShows.stream()
-                .filter(show -> show.get(10).toUpperCase().contains(Constants.HORROR_MOVIE_STRING))
-                .limit(userInput).collect(Collectors.toList());
+    public List<ArrayList<String>> listShowsBasedOnQuery(int userInput, int columnNumber, String query) {
 
-        return horrorShows;
+        List<ArrayList<String>> showList= new ArrayList<>();
+
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Do You want to provide Start and End Date Y or N");
+        String choiceForDate = sc.next();
+
+        switch (choiceForDate) {
+            case "Y":
+                showList = showsBetweenDates(allShows, userInput, columnNumber, query);
+                break;
+
+            case "N":
+                showList = allShows.stream()
+                        .filter(show -> show.get(columnNumber).toUpperCase().contains(query))
+                        .limit(userInput).collect(Collectors.toList());
+                break;
+
+        }
+        return showList;
     }
 
-    public List<ArrayList<String>> countryInd(int userInput) {
-        List<ArrayList<String>> countrySpecific= new ArrayList<>();
-        System.out.println("All the types of Shows with Genre as Horror");
-        countrySpecific = allShows.stream()
-                .filter(show -> show.get(5).toUpperCase().contains(Constants.COUNTRY_INDIA))
-                .limit(userInput).collect(Collectors.toList());
+    public List<ArrayList<String>> listShowsBasedOnQuery(
+            int userInput, int columnNumber, int columnNumber2, String query1, String query2) {
 
-        return countrySpecific;
+        List<ArrayList<String>> showList = new ArrayList<>();
+
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Do You want to provide Start and End Date Y or N");
+
+        String choiceForDate = sc.next();
+
+        switch (choiceForDate) {
+            case "Y":
+                showList = showsBetweenDates(allShows, userInput, columnNumber, columnNumber2, query1, query2);
+                break;
+
+            case "N":
+                showList = allShows.stream()
+                        .filter(show -> show.get(columnNumber).toUpperCase().contains(query1) &&
+                                show.get(columnNumber2).toUpperCase().contains(query2))
+                        .limit(userInput).collect(Collectors.toList());
+                break;
+
+
+
+        }
+        return showList;
     }
+
+        public List<ArrayList<String>> showsBetweenDates(
+                List < ArrayList < String >> showList,
+                int userInput,
+                int columnNumber,
+                String query){
+            Scanner sc = new Scanner(System.in);
+            List<ArrayList<String>> dateBetweenShows = new ArrayList<>();
+            DateFormat date = new SimpleDateFormat("\"MMM d, y\"");
+
+            try {
+                System.out.println("Enter the Initial Month name, For Example \"December\"");
+                String initialMonth = sc.next();
+                System.out.println("Enter the Initial Date, For Example \"25\"");
+                String initialDay = sc.next();
+                System.out.println("Enter the Initial Year, For Example \"2005\"");
+                String initialYear = sc.next();
+
+                String initialDate = "\"" +initialMonth + " " + initialDay + ", " + initialYear + "\"";
+                Date initialParseDate = date.parse(initialDate);
+
+                System.out.println("Enter the Final Month name, For Example \"December\"");
+                String endMonth = sc.next();
+                System.out.println("Enter the Final Date, For Example \"25\"");
+                String endDay = sc.next();
+                System.out.println("Enter the Final Year, For Example \"2005\"");
+                String endYear = sc.next();
+
+                String finalDate = "\"" + endMonth + " " + endDay + ", " + endYear + "\"";
+                Date finalParseDate = date.parse(finalDate);
+                dateBetweenShows = showList.stream()
+                        .filter(show -> {
+                            Date showDate = null;
+                            try {
+                                showDate = date.parse(show.get(Constants.DATE_ADDED_COLUMN));
+                                //System.out.println(showDate);
+                            } catch (ParseException e) {
+                                e.getMessage();
+                            }
+                            return (showDate != null && showDate.after(initialParseDate) && showDate.before(finalParseDate) &&
+                                    show.get(columnNumber).toUpperCase().contains(query));
+                        }).limit(userInput).collect(Collectors.toList());
+
+
+            } catch (ParseException e) {
+                e.getMessage();
+            }
+
+            sc.close();
+            //System.out.println(dateBetweenShows);
+            return dateBetweenShows;
+        }
+
+        public List<ArrayList<String>> showsBetweenDates (
+                List < ArrayList < String >> showList,
+                int userInput,
+                int columnNumber,
+                int columnNumber2,
+                String query1,
+                String query2
+        ){
+            Scanner sc = new Scanner(System.in);
+            List<ArrayList<String>> dateBetweenShows = new ArrayList<>();
+            DateFormat date = new SimpleDateFormat("\"MMM d, y\"");
+
+            try {
+                System.out.println("Enter the Initial Month name, For Example \"December\"");
+                String initialMonth = sc.next();
+                System.out.println("Enter the Initial Date, For Example \"25\"");
+                String initialDay = sc.next();
+                System.out.println("Enter the Initial Year, For Example \"2005\"");
+                String initialYear = sc.next();
+
+                String initialDate =  "\"" + initialMonth + " " + initialDay + ", " + initialYear + "\"";
+                Date initialParseDate = date.parse(initialDate);
+
+                System.out.println("Enter the Final Month name, For Example \"December\"");
+                String endMonth = sc.next();
+                System.out.println("Enter the Final Date, For Example \"25\"");
+                String endDay = sc.next();
+                System.out.println("Enter the Final Year, For Example \"2005\"");
+                String endYear = sc.next();
+
+                String finalDate = "\"" + endMonth + " " + endDay + ", " + endYear + "\"";
+                Date finalParseDate = date.parse(finalDate);
+
+
+                dateBetweenShows = showList.stream()
+                        .filter(show -> {
+                            Date showDate = null;
+                            try {
+                                showDate = date.parse(show.get(Constants.DATE_ADDED_COLUMN));
+                            } catch (ParseException e) {
+                                e.getMessage();
+                            }
+                            return (showDate != null && showDate.after(initialParseDate) && showDate.before(finalParseDate) &&
+                                    show.get(columnNumber).toUpperCase().contains(query1) &&
+                                    show.get(columnNumber2).toUpperCase().contains(query2));
+                        }).limit(userInput).collect(Collectors.toList());
+
+
+            } catch (ParseException e) {
+                e.getMessage();
+            }
+
+            sc.close();
+            return dateBetweenShows;
+        }
+
 }
