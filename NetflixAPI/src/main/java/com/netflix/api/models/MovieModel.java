@@ -1,24 +1,40 @@
 package com.netflix.api.models;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.time.LocalDate;
 import java.util.Arrays;
 
+//Table - Netflix
+
+@Entity
 public class MovieModel {
+
+    @Id
+    @GeneratedValue
+    private long id;
 
     private String showId;
     private String type;
     private String title;
     private String director;
-    private String[] cast;
+    private String cast;
     private String country;
-    private LocalDate date_added;
+    private String date_added;
     private String release_year;
     private String rating;
     private String duration;
-    private String[] listed_in;
+    private String listed_in;
     private String description;
 
-    public MovieModel(String showId, String type, String title, String director, String[] cast, String country, LocalDate date_added, String release_year, String rating, String duration, String[] listed_in, String description) {
+    protected MovieModel() {
+
+    }
+
+
+    public MovieModel(String showId, String type, String title, String director, String cast, String country, String date_added, String release_year, String rating, String duration, String listed_in, String description) {
+        this.id = id;
         this.showId = showId;
         this.type = type;
         this.title = title;
@@ -33,6 +49,8 @@ public class MovieModel {
         this.description = description;
     }
 
+
+
     @Override
     public String toString() {
         return "MovieModel{" +
@@ -40,13 +58,13 @@ public class MovieModel {
                 ", type='" + type + '\'' +
                 ", title='" + title + '\'' +
                 ", director='" + director + '\'' +
-                ", cast=" + Arrays.toString(cast) +
+                ", cast=" + cast +
                 ", country='" + country + '\'' +
                 ", date_added=" + date_added +
                 ", release_year='" + release_year + '\'' +
                 ", rating='" + rating + '\'' +
                 ", duration='" + duration + '\'' +
-                ", listed_in=" + Arrays.toString(listed_in) +
+                ", listed_in=" + listed_in +
                 ", description='" + description + '\'' +
                 '}';
     }
@@ -83,11 +101,11 @@ public class MovieModel {
         this.director = director;
     }
 
-    public String[] getCast() {
+    public String getCast() {
         return cast;
     }
 
-    public void setCast(String[] cast) {
+    public void setCast(String cast) {
         this.cast = cast;
     }
 
@@ -99,11 +117,11 @@ public class MovieModel {
         this.country = country;
     }
 
-    public LocalDate getDate_added() {
+    public String getDate_added() {
         return date_added;
     }
 
-    public void setDate_added(LocalDate date_added) {
+    public void setDate_added(String date_added) {
         this.date_added = date_added;
     }
 
@@ -131,11 +149,11 @@ public class MovieModel {
         this.duration = duration;
     }
 
-    public String[] getListed_in() {
+    public String getListed_in() {
         return listed_in;
     }
 
-    public void setListed_in(String[] listed_in) {
+    public void setListed_in(String listed_in) {
         this.listed_in = listed_in;
     }
 
@@ -145,5 +163,9 @@ public class MovieModel {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public long getId() {
+        return id;
     }
 }
